@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# MATLAB temporary files
+*.asv
+*.m~
+*.mex*
+slprj/
+
+# Editor files
+*.swp
+*~
+.vscode/
+.idea/
+
+# Temporary output
+run_output.txt
+benchmark-runs/
+challenge-pack/
+*.zip
+*.log
