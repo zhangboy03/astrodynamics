@@ -28,7 +28,7 @@ Available inputs:
 - error_checking_program.exe: package validator, if your environment can run it.
 - benchmark/SCORING.md: scoring and validity rules.
 - benchmark/tools/preflight_score.py: static preflight checker, not a full physics validator.
-- benchmark/tools/run_official_validator.py: official validator wrapper for Wine/CrossOver/Windows.
+- benchmark/tools/run_official_validator.py: official validator wrapper for Windows/CrossOver/Wine; it runs the package executable against your `results.txt`.
 - Empty workspace and submission directories.
 
 Required final artifacts:

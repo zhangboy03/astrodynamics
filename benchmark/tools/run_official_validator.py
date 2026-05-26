@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Run the official Windows validator with macOS-friendly fallbacks.
 
-The executable's exact CLI contract is not documented in this repository, so
-the wrapper tries several safe invocation patterns and records all output.
+The official executable is a MATLAB Runtime console app. It expects a file
+named ``results.txt`` in its working directory and should be launched without
+positional arguments.
 """
 
 from __future__ import annotations
@@ -11,6 +12,8 @@ import argparse
 import json
 import os
 import platform
+import re
+import signal
 import shutil
 import subprocess
 import sys
@@ -41,7 +44,14 @@ FAIL_KEYWORDS = [
     "错误",
     "不满足",
     "非法",
+    "未通过",
+    "有误",
+    "缺少",
+    "未检验通过",
+    "scriptnotafunction",
 ]
+
+ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 
 
 def repo_root() -> Path:
@@ -70,7 +80,7 @@ def find_runner() -> tuple[list[str] | None, str]:
     for env_name in ("VALIDATOR_WINE", "WINE_CMD", "CROSSOVER_WINE"):
         value = os.environ.get(env_name)
         if value:
-            return split_cmd(value), env_name
+            return split_cmd(value), "crossover" if env_name == "CROSSOVER_WINE" else env_name
 
     for name in ("wine64", "wine"):
         path = shutil.which(name)
@@ -88,34 +98,87 @@ def find_runner() -> tuple[list[str] | None, str]:
     return None, "unavailable"
 
 
+def runner_env(runner_name: str) -> dict[str, str]:
+    env = os.environ.copy()
+    bottle = (
+        os.environ.get("VALIDATOR_CROSSOVER_BOTTLE")
+        or os.environ.get("CROSSOVER_BOTTLE")
+        or "astrodynamics-validator"
+    )
+    if runner_name == "crossover":
+        env.setdefault("CX_BOTTLE", bottle)
+    return env
+
+
+def cleanup_runner(runner_name: str, env: dict[str, str]) -> None:
+    if runner_name != "crossover":
+        return
+    wineserver = "/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/bin/wineserver"
+    if Path(wineserver).exists():
+        subprocess.run(
+            [wineserver, "-k"],
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=15,
+            check=False,
+        )
+
+
+def clean_output(value: str | bytes | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        text = value.decode("utf-8", errors="replace")
+    else:
+        text = value
+    return ANSI_RE.sub("", text).replace("\r", "\n")
+
+
 def run_one(
     cmd: list[str],
     cwd: Path,
     timeout_s: int,
+    env: dict[str, str],
+    runner_name: str,
     stdin_text: str | None = None,
 ) -> dict[str, object]:
+    proc: subprocess.Popen[str] | None = None
     try:
-        proc = subprocess.run(
+        proc = subprocess.Popen(
             cmd,
             cwd=str(cwd),
-            input=stdin_text,
+            env=env,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            capture_output=True,
-            timeout=timeout_s,
+            start_new_session=True,
         )
+        stdout, stderr = proc.communicate(stdin_text, timeout=timeout_s)
         return {
             "cmd": cmd,
             "returncode": proc.returncode,
-            "stdout": proc.stdout,
-            "stderr": proc.stderr,
+            "stdout": clean_output(stdout),
+            "stderr": clean_output(stderr),
             "timeout": False,
         }
     except subprocess.TimeoutExpired as exc:
+        if proc and proc.poll() is None:
+            try:
+                os.killpg(proc.pid, signal.SIGTERM)
+                proc.wait(timeout=5)
+            except Exception:
+                try:
+                    os.killpg(proc.pid, signal.SIGKILL)
+                except Exception:
+                    pass
+        cleanup_runner(runner_name, env)
         return {
             "cmd": cmd,
             "returncode": None,
-            "stdout": exc.stdout or "",
-            "stderr": exc.stderr or "",
+            "stdout": clean_output(exc.stdout),
+            "stderr": clean_output(exc.stderr),
             "timeout": True,
         }
 
@@ -168,13 +231,9 @@ def main() -> int:
         shutil.copy2(exe, local_exe)
         shutil.copy2(results, local_results)
 
+        env = runner_env(runner_name)
         exe_cmd = [str(local_exe)] if runner_name == "windows-native" else runner + [str(local_exe)]
-        attempts = [
-            run_one(exe_cmd + [str(local_results)], cwd, args.timeout),
-            run_one(exe_cmd, cwd, args.timeout),
-            run_one(exe_cmd, cwd, args.timeout, stdin_text=f"{local_results}\n"),
-            run_one(exe_cmd + ["results.txt"], cwd, args.timeout),
-        ]
+        attempts = [run_one(exe_cmd, cwd, args.timeout, env=env, runner_name=runner_name)]
 
     official_pass = False
     reason = "no attempt passed"
@@ -205,4 +264,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

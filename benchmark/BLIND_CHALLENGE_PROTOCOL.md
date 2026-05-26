@@ -138,7 +138,8 @@ Tier 1: official/package validator
 python3 benchmark/tools/run_official_validator.py submission/results.txt
 ```
 
-- This wrapper tries Wine/CrossOver/Windows-native execution patterns for `error_checking_program.exe`.
+- This wrapper copies the candidate file to a temporary working directory as `results.txt` and launches `error_checking_program.exe` with no positional arguments, matching the package validator's actual CLI contract.
+- On the maintainer Mac, this runs through the CrossOver `astrodynamics-validator` bottle documented in `arena/MAC_OFFICIAL_VALIDATOR.md`.
 - Save stdout/stderr to `submission/run.log`.
 - If the wrapper reports that the official executable is unavailable, record `official pending` and continue to physics audit. The result is not fully official until the same file passes the executable on a compatible host.
 

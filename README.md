@@ -61,7 +61,7 @@ The model must write final artifacts under `submission/`.
 
 ## Official Validator On Mac
 
-The assignment ships a Windows x86-64 console executable: `error_checking_program.exe`. On this Apple Silicon Mac, the arena runner uses Wine/CrossOver/VM fallback as described in [arena/MAC_OFFICIAL_VALIDATOR.md](arena/MAC_OFFICIAL_VALIDATOR.md).
+The assignment ships a Windows x86-64 console executable: `error_checking_program.exe`. On this Apple Silicon Mac, the maintained closed loop runs through a CrossOver 64-bit bottle with MATLAB Runtime R2023a 9.14, as described in [arena/MAC_OFFICIAL_VALIDATOR.md](arena/MAC_OFFICIAL_VALIDATOR.md).
 
 The model-facing command is:
 
@@ -69,7 +69,7 @@ The model-facing command is:
 python3 benchmark/tools/run_official_validator.py submission/results.txt
 ```
 
-This command is included in the blind pack so agents have a closed validation loop.
+This command is included in the blind pack so agents have a closed validation loop. The wrapper handles the official executable's requirement that the candidate file be named `results.txt` in the executable's working directory.
 
 ## Repository Map
 
@@ -82,4 +82,3 @@ This command is included in the blind pack so agents have a closed validation lo
 - `error_checking_program.exe` - official Windows validator from the assignment package.
 
 Large MATLAB data files are tracked with Git LFS. Run `git lfs pull` after cloning the full repository.
-
