@@ -10,9 +10,12 @@ You have one task: solve the assignment in docs/assignment.md from scratch and p
 Execution mode:
 - Work autonomously in this workspace.
 - You may write code, run numerical searches, install packages, debug, and validate.
-- There is no time limit.
+- Budget class: Standard 24h Blind Arena.
+- Wall-clock budget: 24 hours.
+- Official validator call budget: 50 calls.
+- Final submission budget: 3 attempts.
 - Do not ask the human for clarification. If something is ambiguous, make a reasonable assumption, document it, and continue.
-- Continue until you have a final submission or a clearly documented blocker.
+- Continue until you have a final submission, hit a budget limit, or reach a clearly documented blocker.
 
 Fairness rules:
 - Do not search the web for this benchmark, this repository, the assignment title, existing solutions, or payload numbers.
@@ -25,6 +28,7 @@ Available inputs:
 - error_checking_program.exe: package validator, if your environment can run it.
 - benchmark/SCORING.md: scoring and validity rules.
 - benchmark/tools/preflight_score.py: static preflight checker, not a full physics validator.
+- benchmark/tools/run_official_validator.py: official validator wrapper for Wine/CrossOver/Windows.
 - Empty workspace and submission directories.
 
 Required final artifacts:
@@ -50,8 +54,8 @@ Scoring:
 Before finishing:
 1. Run your own validation checks.
 2. Run python3 benchmark/tools/preflight_score.py submission/results.txt.
-3. Run the package validator if possible.
+3. Run python3 benchmark/tools/run_official_validator.py submission/results.txt.
 4. Re-run the reproduction command from a clean state or explain why that is not possible.
 5. Put all final artifacts under submission/.
+6. Record elapsed time, official validator call count, final submission count, and any budget limits reached in submission/run.log.
 ```
-

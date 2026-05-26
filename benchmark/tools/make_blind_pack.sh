@@ -18,6 +18,11 @@ cp "$repo_root/benchmark/BLIND_CHALLENGE_PROTOCOL.md" "$out_dir/benchmark/BLIND_
 cp "$repo_root/benchmark/SCORING_BLIND.md" "$out_dir/benchmark/SCORING.md"
 cp "$repo_root/benchmark/RUN_RECORD_TEMPLATE.md" "$out_dir/benchmark/RUN_RECORD_TEMPLATE.md"
 cp "$repo_root/benchmark/tools/preflight_score.py" "$out_dir/benchmark/tools/preflight_score.py"
+cp "$repo_root/benchmark/tools/run_official_validator.py" "$out_dir/benchmark/tools/run_official_validator.py"
+cp "$repo_root/benchmark/tools/run_official_validator.sh" "$out_dir/benchmark/tools/run_official_validator.sh"
+chmod +x "$out_dir/benchmark/tools/preflight_score.py" \
+  "$out_dir/benchmark/tools/run_official_validator.py" \
+  "$out_dir/benchmark/tools/run_official_validator.sh"
 
 touch "$out_dir/workspace/.gitkeep" "$out_dir/submission/.gitkeep"
 
@@ -30,6 +35,8 @@ This pack intentionally excludes the reference implementation, reference result,
 method summary, generated MATLAB data, figures, and Git history.
 
 Final artifacts must be written to `submission/`.
+
+Default budget class: Standard 24h Blind Arena.
 EOF
 
 find "$out_dir" -name .DS_Store -delete

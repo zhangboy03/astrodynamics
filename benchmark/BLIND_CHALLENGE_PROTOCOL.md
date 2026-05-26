@@ -9,8 +9,8 @@ Use **B-mode agent execution**:
 - The model receives one initial task prompt.
 - The model may autonomously create code, install packages, run numerical searches, debug, and validate.
 - The model must not ask the human for clarification during the run.
-- There is no wall-clock budget. Record elapsed time, but do not stop a run for being slow.
-- The run ends only when the model declares a final submission or the operator aborts for infrastructure reasons.
+- The default arena budget is Standard 24h: 24 hours wall-clock, 50 official validator calls, and 3 final submissions.
+- The run ends when the model declares a final submission, reaches a hard budget limit, or the operator aborts for infrastructure reasons.
 
 ## Primary Measurement
 
@@ -53,6 +53,8 @@ The blind pack should contain only:
 - `benchmark/BLIND_CHALLENGE_PROTOCOL.md`
 - `benchmark/RUN_RECORD_TEMPLATE.md`
 - `benchmark/tools/preflight_score.py`
+- `benchmark/tools/run_official_validator.py`
+- `benchmark/tools/run_official_validator.sh`
 - Empty `workspace/` and `submission/` directories
 
 The pack must not include `.git/` metadata.
@@ -79,13 +81,21 @@ Run setup:
 5. Attach or mount the blind pack files.
 6. Do not provide any other context.
 7. Do not answer clarification questions; if the model asks, reply only: `Proceed with reasonable assumptions based on the assignment.`
-8. Record all tool output, final artifacts, elapsed time, model identifier, and environment details.
+8. Record all tool output, final artifacts, elapsed time, model identifier, budget class, official validator calls, and environment details.
 
 Run isolation:
 
 - Use a separate directory for GPT-5.5 and Opus 4.7.
 - Do not reuse files, caches, generated data, package environments, or intermediate notes between model runs.
 - If the same machine must be reused, create separate virtual environments and clear shell history/context visible to the agent.
+
+Budget enforcement:
+
+- Use `arena/BUDGETS.md` as the source of truth.
+- The default class is Standard 24h.
+- Count every call to `benchmark/tools/run_official_validator.py` as an official validator call, whether it passes, fails, times out, or reports unavailable.
+- Count a final submission each time the model declares artifacts under `submission/` as final.
+- If a run exceeds any hard limit, mark it `over budget`; archive it, but do not rank it in that budget class.
 
 ## Submission Contract
 
@@ -122,8 +132,15 @@ This checks format, event ordering, basic timing, final fuel, and extracts the p
 
 Tier 1: official/package validator
 
-- Run `error_checking_program.exe` if the environment supports it.
+- Run the official wrapper:
+
+```bash
+python3 benchmark/tools/run_official_validator.py submission/results.txt
+```
+
+- This wrapper tries Wine/CrossOver/Windows-native execution patterns for `error_checking_program.exe`.
 - Save stdout/stderr to `submission/run.log`.
+- If the wrapper reports that the official executable is unavailable, record `official pending` and continue to physics audit. The result is not fully official until the same file passes the executable on a compatible host.
 
 Tier 2: independent physics audit
 

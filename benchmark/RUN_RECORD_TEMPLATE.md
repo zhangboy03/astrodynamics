@@ -7,7 +7,11 @@ Run id:
 Model:
 Model version/date:
 Provider:
-Execution mode: blind B-mode, unlimited budget
+Execution mode: blind B-mode
+Budget class:
+Wall-clock budget:
+Official validator call budget:
+Final submission budget:
 Operator:
 Start time:
 End time:
@@ -51,6 +55,7 @@ Output summary:
 Official/package validator:
 Command:
 Exit code:
+Call count:
 Output summary:
 
 Independent physics audit:
@@ -72,4 +77,3 @@ Trajectory architecture summary:
 
 Operator notes:
 ```
-

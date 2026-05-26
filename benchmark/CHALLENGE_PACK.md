@@ -13,6 +13,8 @@ Include:
 - `benchmark/BLIND_CHALLENGE_PROTOCOL.md`
 - `benchmark/RUN_RECORD_TEMPLATE.md`
 - `benchmark/tools/preflight_score.py`
+- `benchmark/tools/run_official_validator.py`
+- `benchmark/tools/run_official_validator.sh`
 - An empty `src/` or `matlab/` directory
 
 Withhold:

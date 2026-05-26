@@ -31,11 +31,15 @@ score = M_carry in kg
 
 Use the carried mass from the departure rows before event `2`; after event `2`, `M_carry` should become zero because the payload is left on the Moon.
 
-Current reference baseline:
+Current champion:
 
 ```text
+Model = Opus 4.5
+Run = arena/runs/opus-4.5-reference.md
 M_carry = 12196.88969372 kg
 ```
+
+Public scoreboard: `arena/SCOREBOARD.md`.
 
 ## Tie Breakers
 
@@ -66,4 +70,3 @@ Mission time:
 Result file path:
 Notes:
 ```
-
